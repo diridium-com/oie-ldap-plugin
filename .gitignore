@@ -1,0 +1,21 @@
+.classpath
+.project
+.settings
+target
+.idea/
+*.iml
+.DS_Store
+
+# Signing configuration (machine-specific, contains secrets)
+yubikey-pkcs11.cfg
+certchain.pem
+
+# Web administrator UI build tooling
+node_modules/
+node/
+
+# Local wiki working copy (lives in the .wiki.git repo, not here)
+wiki/
+
+# Python bytecode
+__pycache__/

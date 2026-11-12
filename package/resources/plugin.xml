@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- SPDX-FileCopyrightText: Copyright 2025-2026 Diridium Technologies Inc. -->
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+
+<pluginMetaData path="oie-ldap-plugin">
+    <name>LDAP Authentication</name>
+    <author>Diridium Technologies Inc. (based on work by Christopher Schultz)</author>
+    <pluginVersion>${project.version}</pluginVersion>
+    <mirthVersion>${plugin.supported.mc.versions}</mirthVersion>
+    <url>https://github.com/diridium-com/oie-ldap-plugin</url>
+    <description>Signs users in to the Administrator against an LDAP directory.</description>
+
+    <serverClasses>
+        <string>com.diridium.ldap.LDAPAuthenticatorPlugin</string>
+    </serverClasses>
+
+    <library type="SERVER" path="oie-ldap-plugin-server-${project.version}.jar" />
+</pluginMetaData>

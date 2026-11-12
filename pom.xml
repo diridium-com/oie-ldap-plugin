@@ -1,145 +1,107 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- SPDX-FileCopyrightText: Copyright 2025-2026 Diridium Technologies Inc. -->
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>net.christopherschultz.mirth.plugins</groupId>
-  <artifactId>ldap-auth</artifactId>
-  <version>0.1</version>
+    <groupId>com.diridium</groupId>
+    <artifactId>oie-ldap-plugin</artifactId>
+    <version>${revision}</version>
 
-  <name>ldap-auth-plugin</name>
-  <url>https://github.com/OpenIntegrationEngine/ldap-plugin</url>
+    <name>LDAP Authentication</name>
+    <packaging>pom</packaging>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
-  </properties>
+    <properties>
+        <revision>1.0.0</revision>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.mirth</groupId>
-      <artifactId>server</artifactId>
-      <version>3.8.0</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/mirth-server.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>com.mirth</groupId>
-      <artifactId>client-core</artifactId>
-      <version>3.8.0</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/mirth-client-core.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>com.mirth</groupId>
-      <artifactId>client</artifactId>
-      <version>3.8.0</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/mirth-client.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>org.jdesktop</groupId>
-      <artifactId>swingx-core</artifactId>
-      <version>1.6.2</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/swingx-core-1.6.2.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>net.miginfocom</groupId>
-      <artifactId>miglayout-swing</artifactId>
-      <version>4.2</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/miglayout-swing-4.2.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>net.miginfocom</groupId>
-      <artifactId>miglayout-core</artifactId>
-      <version>4.2</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/miglayout-core-4.2.jar</systemPath>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.30</version>
-    </dependency>
+        <plugin.supported.mc.versions>${mc.version}</plugin.supported.mc.versions>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.owasp</groupId>
-      <artifactId>dependency-check-maven</artifactId>
-      <version>5.2.1</version>
-      <type>maven-plugin</type>
-    </dependency>
-  </dependencies>
+        <mc.version>4.7.0</mc.version>
+        <!-- SHA-256 of the OIE distribution for mc.version (oie_unix_<version>.tar.gz), from
+             the release's sha256sums file. scripts/install-engine-jars.sh checks the download
+             against it before taking the engine jars from it. Update it with mc.version. -->
+        <oie.dist.sha256>ab08558873dc6be1e474afaacc46efe94d29c945cd3381c10d0ae548ecb429de</oie.dist.sha256>
+        <!-- The provided versions match what the engine ships, since that is what the
+             plugin runs against. Re-check them on every mc.version bump. -->
+        <log4j.version>2.26.1</log4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <junit5.version>5.10.2</junit5.version>
 
-  <scm>
-    <developerConnection>scm:git:https://github.com/ChristopherSchultz/mirth-plugins</developerConnection>
-    <tag>Release-1</tag>
-  </scm>
-  <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-      <plugins>
-        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.1.0</version>
-        </plugin>
-        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>2.5.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>2.8.2</version>
-        </plugin>
-        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.7.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
-  <reporting>
-    <plugins>
-        <plugin>
-          <groupId>com.github.spotbugs</groupId>
-          <artifactId>spotbugs-maven-plugin</artifactId>
-          <configuration>
-            <effort>Max</effort>
-            <threshold>Low</threshold>
-            <excludeFilterFile>findbugs-excludes.xml</excludeFilterFile>
-          </configuration>
-        </plugin>
-    </plugins>
-  </reporting>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Fixed entry times in the jars, so the same source builds the same bytes. -->
+        <project.build.outputTimestamp>2026-10-08T00:00:00Z</project.build.outputTimestamp>
+
+        <!-- Signing disabled by default. Use -Psigning to enable. -->
+        <signing.skip>true</signing.skip>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>signing</id>
+            <properties>
+                <signing.skip>false</signing.skip>
+                <signing.keystore>NONE</signing.keystore>
+                <signing.storetype>PKCS11</signing.storetype>
+                <signing.providerClass>sun.security.pkcs11.SunPKCS11</signing.providerClass>
+                <signing.providerArg>${user.dir}/yubikey-pkcs11.cfg</signing.providerArg>
+                <signing.alias>Certificate for PIV Authentication</signing.alias>
+                <signing.storepass>${env.YUBIKEY_PIN}</signing.storepass>
+                <signing.certchain>${user.dir}/certchain.pem</signing.certchain>
+                <signing.tsa>http://timestamp.digicert.com</signing.tsa>
+            </properties>
+        </profile>
+    </profiles>
+
+    <organization>
+        <name>Diridium Technologies Inc.</name>
+        <url>https://diridium.com</url>
+    </organization>
+
+    <modules>
+        <module>server</module>
+        <module>package</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <release>17</release>
+                </configuration>
+            </plugin>
+            <!-- Pin surefire: unpinned, Maven <= 3.8's super-POM binds a surefire old
+                 enough to lack the JUnit Platform provider, which silently SKIPS the
+                 entire JUnit 5 suite with a green build. Pinning 3.x guarantees the tests
+                 actually run everywhere. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+            <!-- 3.2.0 or later honours project.build.outputTimestamp. The default entries
+                 (Built-By among them) are left out: they record the build machine's user. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultEntries>false</addDefaultEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Application-Name>LDAP Authentication</Application-Name>
+                            <url>https://diridium.com</url>
+                            <authors>Diridium Technologies Inc.</authors>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
