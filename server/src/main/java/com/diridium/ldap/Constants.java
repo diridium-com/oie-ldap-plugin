@@ -1,4 +1,4 @@
-package org.openintegrationengine.engine.plugins.auth.ldap;
+package com.diridium.ldap;
 
 public interface Constants
 {

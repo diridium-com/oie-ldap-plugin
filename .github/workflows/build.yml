@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: Copyright 2025-2026 Diridium Technologies Inc.
+# SPDX-License-Identifier: MPL-2.0
+#
+# Builds and tests every push to main and every pull request, on Java 17 and 21.
+#
+# The engine jars this plugin compiles against come from the published OIE
+# distribution, installed by scripts/install-engine-jars.sh, the same script
+# local builds use. The tarball is cached by engine version, so it is
+# downloaded once and reused until mc.version changes.
+
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+# -C makes every Maven run, the engine-jar install script's included, fail on a
+# checksum mismatch instead of only warning.
+env:
+  MAVEN_ARGS: -C
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Tests run on 17, the engine's minimum, and on 21, the JRE the 4.7.0 installers
+    # bundle. <release>17 in the POM keeps the output Java 17 bytecode on both.
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['17', '21']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      # The engine version lives in exactly one place, the POM's mc.version. Here it
+      # keys the cache; the install script reads it again itself.
+      - name: Resolve the engine version from the POM
+        id: engine
+        run: |
+          MC_VERSION="$(mvn -q -N org.apache.maven.plugins:maven-help-plugin:3.5.1:evaluate -Dexpression=mc.version -DforceStdout)"
+          if [ -z "$MC_VERSION" ]; then
+            echo "::error::Could not read mc.version from pom.xml"
+            exit 1
+          fi
+          echo "mc_version=$MC_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache OIE distribution
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .oie-dist
+          key: oie-dist-${{ steps.engine.outputs.mc_version }}
+
+      # The script local builds use: it downloads the distribution if the cache
+      # missed, checks it against the SHA-256 in the POM, and installs the engine jars.
+      - name: Install engine jars into the local Maven repo
+        env:
+          OIE_DIST_CACHE: ${{ github.workspace }}/.oie-dist
+        run: ./scripts/install-engine-jars.sh
+
+      - name: Build and test
+        run: mvn -B -ntp clean verify
+
+      # A green build with zero tests run is the failure this guards against:
+      # surefire is pinned in the POM, but a pin can be dropped and nothing
+      # about the build output would look wrong.
+      - name: Confirm tests actually ran
+        run: |
+          reports=$(find . -path '*/target/surefire-reports/*.xml' | wc -l)
+          if [ "$reports" -eq 0 ]; then
+            echo "::error::No surefire reports were produced. The test suite did not run."
+            exit 1
+          fi
+          echo "surefire report files: $reports"
+
+      # One leg uploads, since two uploads of one artifact name fail: the 17 leg.
+      - name: Upload plugin zip
+        if: matrix.java == '17'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plugin-zip
+          path: package/target/oie-ldap-plugin-*.zip
+          if-no-files-found: error
+          retention-days: 7
