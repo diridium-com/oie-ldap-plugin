@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: Copyright 2026 Diridium Technologies Inc. -->
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+
+<!-- Test logging. The plugin's logger runs at DEBUG so LogCapture sees every line;
+     the console shows only warnings and errors. -->
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="console" target="SYSTEM_ERR">
+            <PatternLayout pattern="%-5level %logger{1} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.diridium.ldap" level="debug" additivity="false">
+            <AppenderRef ref="console" level="warn"/>
+        </Logger>
+        <Root level="warn">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+</Configuration>

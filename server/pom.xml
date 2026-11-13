@@ -18,42 +18,172 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.diridium</groupId>
+            <artifactId>oie-ldap-plugin-shared</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- Provided by the engine at runtime (server-lib), at the versions OIE 4.7.0
+             ships; never bundled. The LDAP client is the JDK's own JNDI provider. -->
+        <dependency>
             <groupId>com.mirth.connect</groupId>
             <artifactId>mirth-server</artifactId>
             <version>${mc.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- ControllerException lives in mirth-client-core. -->
+        <!-- ControllerException, ExtensionPermission, OperationUtil, MirthApiException. -->
         <dependency>
             <groupId>com.mirth.connect</groupId>
             <artifactId>mirth-client-core</artifactId>
             <version>${mc.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- The plugin logs through slf4j; the engine ships server-lib/donkey/slf4j-api-1.7.30.jar. -->
+        <!-- EventController.dispatchEvent, which writes the servlet's audit events, takes
+             donkey's Event type. -->
+        <dependency>
+            <groupId>com.mirth.connect</groupId>
+            <artifactId>donkey-server</artifactId>
+            <version>${mc.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- The engine's Encryptor, which seals the service account password. -->
+        <dependency>
+            <groupId>com.mirth.connect</groupId>
+            <artifactId>mirth-crypto</artifactId>
+            <version>${mc.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${javax-servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${javax-rs-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- The plugin logs through slf4j, as role-based-access-control does; the engine
+             ships server-lib/donkey/slf4j-api-1.7.30.jar. -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit5.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- The in-memory directory server the tests sign in against, ldaps and StartTLS
+             included; it also generates the test CA and server certificates. -->
+        <dependency>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
+            <version>${unboundid.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- The tests route slf4j the way the engine does: slf4j-log4j12 to the log4j 1.2
+             bridge to log4j-core, all at the engine's versions. LogCapture reads the levels
+             and throwables from a log4j-core appender. log4j 1.2 itself is left out: the
+             bridge provides its classes. -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- The engine's User model and OperationUtil need commons-lang3 at runtime. -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- OperationUtil.getOperationNamesForPermission scans the engine's servlet
+             interfaces with Reflections, which needs guava and javassist. -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- PluginHostnameCheckTest needs the JDK's own LDAP host name check off for its
+                 whole JVM (JNDI reads the property once), so it runs alone in a second
+                 execution and the default one leaves it out. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/PluginHostnameCheckTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jdk-hostname-check-off</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/PluginHostnameCheckTest.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <com.sun.jndi.ldap.object.disableEndpointIdentification>true</com.sun.jndi.ldap.object.disableEndpointIdentification>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
