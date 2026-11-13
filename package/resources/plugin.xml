@@ -12,8 +12,12 @@
     <description>Signs users in to the Administrator against an LDAP directory.</description>
 
     <serverClasses>
-        <string>com.diridium.ldap.LDAPAuthenticatorPlugin</string>
+        <string>com.diridium.ldap.LdapAuthorizationPlugin</string>
     </serverClasses>
 
     <library type="SERVER" path="oie-ldap-plugin-server-${project.version}.jar" />
+    <library type="SHARED" path="oie-ldap-plugin-shared-${project.version}.jar" />
+
+    <apiProvider type="SERVLET_INTERFACE" name="com.diridium.ldap.LdapServletInterface" />
+    <apiProvider type="SERVER_CLASS" name="com.diridium.ldap.LdapServlet" />
 </pluginMetaData>
